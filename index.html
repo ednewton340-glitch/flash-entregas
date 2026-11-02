@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="#ffd400"><link rel="manifest" href="./manifest.webmanifest"><link rel="icon" href="./assets/icon.svg">
+<title>Flash Entregas — Protótipo</title>
+<style>
+:root{--yellow:#ffd400;--black:#101010;--dark:#1b1b1b;--gray:#f3f4f6;--muted:#777;--green:#159447}
+*{box-sizing:border-box}body{margin:0;background:#ececec;font-family:Arial,Helvetica,sans-serif;color:#161616}
+.app{max-width:430px;min-height:100vh;margin:auto;background:#fff;box-shadow:0 0 24px #0002;position:relative;padding-bottom:82px}
+header{background:var(--black);color:white;padding:18px 18px 16px;border-bottom:4px solid var(--yellow)}
+.brand{font-weight:900;font-size:24px;letter-spacing:-1px}.brand span{color:var(--yellow)}.city{font-size:12px;color:#ccc;margin-top:4px}
+.rolebar{display:flex;gap:7px;padding:12px;background:#fff;position:sticky;top:0;z-index:3;border-bottom:1px solid #eee}
+.rolebar button{flex:1;border:1px solid #ddd;border-radius:10px;background:#fff;padding:10px 4px;font-weight:700;font-size:12px}
+.rolebar button.active{background:var(--yellow);border-color:var(--yellow)}
+main{padding:18px}.eyebrow{color:#777;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px}
+h1{font-size:25px;margin:6px 0 8px}p{line-height:1.45}.card{background:#fff;border:1px solid #e7e7e7;border-radius:16px;padding:15px;margin:13px 0;box-shadow:0 3px 12px #00000008}
+.hero{background:var(--black);color:#fff;border-radius:18px;padding:18px;overflow:hidden}.hero strong{font-size:23px;display:block}.hero em{color:var(--yellow);font-style:normal}.hero p{color:#ddd;font-size:13px}
+label{display:block;font-size:12px;font-weight:700;margin:12px 0 6px}
+input,select{width:100%;padding:13px;border:1px solid #ddd;border-radius:10px;font-size:15px;background:white}
+.btn{border:0;border-radius:11px;background:var(--yellow);padding:14px 16px;font-size:15px;font-weight:800;width:100%;cursor:pointer;margin-top:12px}
+.btn.secondary{background:#222;color:#fff}.btn.green{background:var(--green);color:#fff}.btn.outline{background:#fff;border:1px solid #ddd}
+.row{display:flex;gap:10px}.row>*{flex:1}.pill{display:inline-block;background:#fff4b0;padding:6px 9px;border-radius:20px;font-size:12px;font-weight:700}
+.price{font-size:30px;font-weight:900}.muted{color:var(--muted);font-size:13px}.map{height:150px;border-radius:14px;background:linear-gradient(25deg,#e7e9dc,#dce9f3);position:relative;overflow:hidden;margin:12px 0}
+.map:before,.map:after{content:"";position:absolute;background:#fff;transform:rotate(-24deg);width:150%;height:12px;left:-20%;top:45px;box-shadow:0 35px #fff,0 -35px #fff}
+.route{position:absolute;z-index:1;left:18%;top:75px;width:62%;height:3px;background:#1684ef;transform:rotate(-18deg)}
+.pin{position:absolute;z-index:2;background:#e33;color:white;border-radius:50% 50% 50% 0;width:18px;height:18px;transform:rotate(-45deg);top:45px;right:20%}
+.pin.start{background:#1684ef;left:15%;top:90px}
+.statgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.stat{background:#f7f7f7;border-radius:12px;padding:14px}.stat b{font-size:22px;display:block;margin-top:6px}
+.item{display:flex;justify-content:space-between;gap:12px;align-items:center}.item+.item{border-top:1px solid #eee;padding-top:12px;margin-top:12px}
+.switch{display:flex;align-items:center;justify-content:space-between;background:#f5f5f5;padding:14px;border-radius:12px;font-weight:700}
+nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:min(430px,100%);display:flex;background:#111;color:#ddd;padding:9px 4px calc(9px + env(safe-area-inset-bottom));z-index:5}
+nav button{flex:1;background:transparent;color:inherit;border:0;font-size:11px;padding:7px 2px;cursor:pointer}nav button span{display:block;font-size:19px;margin-bottom:3px}nav button.active{color:var(--yellow)}
+.notice{background:#fff8cf;border:1px solid #f0d95b;border-radius:12px;padding:12px;font-size:13px}
+.hidden{display:none!important}.success{color:#168144;font-weight:700}.small{font-size:12px}
+</style>
+</head>
+<body>
+<div class="app">
+<header><div class="brand">⚡ FLASH <span>ENTREGAS</span></div><div class="city">SANTARÉM • PARÁ</div></header>
+<div class="rolebar">
+<button class="active" data-role="cliente">👤 Cliente</button>
+<button data-role="motoboy">🏍️ Motoboy</button>
+<button data-role="admin">🛠️ Admin</button>
+</div>
+<main id="screen"></main>
+<nav id="nav"></nav>
+</div>
+<script>
+const state={role:'cliente',tab:'inicio',pickup:'',dropoff:'',payment:'Pix',price:15,requested:false,available:false,accepted:false,delivered:false};
+const screen=document.querySelector('#screen'), nav=document.querySelector('#nav');
+const navs={cliente:[['inicio','⌂','Início'],['entregas','▣','Entregas'],['pagamentos','▤','Pagamentos'],['perfil','♙','Perfil']],motoboy:[['inicio','⌂','Início'],['corridas','🏍','Corridas'],['ganhos','R$','Ganhos'],['perfil','♙','Perfil']],admin:[['painel','▦','Painel'],['corridas','▣','Corridas'],['motoboys','♙','Motoboys'],['ajustes','⚙','Ajustes']]};
+function header(kicker,title,desc=''){return `<div class="eyebrow">${kicker}</div><h1>${title}</h1>${desc?`<p class="muted">${desc}</p>`:''}`}
+function render(){
+ document.querySelectorAll('[data-role]').forEach(b=>b.classList.toggle('active',b.dataset.role===state.role));
+ nav.innerHTML=navs[state.role].map(([id,icon,label])=>`<button data-tab="${id}" class="${state.tab===id?'active':''}"><span>${icon}</span>${label}</button>`).join('');
+ nav.querySelectorAll('button').forEach(b=>b.onclick=()=>{state.tab=b.dataset.tab;render()});
+ if(state.role==='cliente') renderClient(); else if(state.role==='motoboy') renderDriver(); else renderAdmin();
+}
+function renderClient(){
+ if(state.tab==='inicio'){screen.innerHTML=`
+ <div class="hero"><span class="pill">ENTREGA RÁPIDA</span><strong>Sua entrega,<br><em>na velocidade</em> que precisa.</strong><p>Peça um motoboy em Santarém com poucos toques.</p></div>
+ ${header('Nova solicitação','Para onde vai sua encomenda?','Informe os endereços para simular o valor da entrega.')}
+ <div class="card"><label>Endereço de retirada</label><input id="pickup" placeholder="Ex.: Av. Tapajós, 100" value="${state.pickup}">
+ <label>Endereço de entrega</label><input id="dropoff" placeholder="Ex.: Rua 24 de Outubro, 200" value="${state.dropoff}">
+ <label>Forma de pagamento</label><select id="payment">${['Pix','Dinheiro','Cartão'].map(x=>`<option ${state.payment===x?'selected':''}>${x}</option>`).join('')}</select>
+ <div class="row" style="align-items:center;margin-top:15px"><div><div class="muted">Preço estimado*</div><div class="price">R$ ${state.price.toFixed(2).replace('.',',')}</div></div><span class="pill">Santarém–PA</span></div>
+ <button class="btn" id="request">⚡ Solicitar motoboy</button></div>
+ <p class="muted small">*Valor demonstrativo do protótipo. O preço real deve ser calculado por distância e regras da operação.</p>
+ ${state.requested?`<div class="card"><span class="success">✓ Solicitação criada no protótipo</span><p>Buscando um motoboy disponível…</p><div class="map"><div class="route"></div><div class="pin start"></div><div class="pin"></div></div><button class="btn secondary" id="cancel">Cancelar solicitação</button></div>`:''}`;
+ document.querySelector('#pickup').oninput=e=>state.pickup=e.target.value;document.querySelector('#dropoff').oninput=e=>state.dropoff=e.target.value;document.querySelector('#payment').onchange=e=>state.payment=e.target.value;
+ document.querySelector('#request').onclick=()=>{if(!state.pickup.trim()||!state.dropoff.trim()){alert('Preencha os endereços de retirada e entrega.');return}state.requested=true;render()};
+ const cancel=document.querySelector('#cancel');if(cancel)cancel.onclick=()=>{state.requested=false;render()};
+ }else if(state.tab==='entregas'){screen.innerHTML=header('Área do cliente','Minhas entregas')+`<div class="card">${state.requested?`<div class="item"><div><b>Entrega solicitada</b><div class="muted">${state.pickup} → ${state.dropoff}</div></div><span class="pill">Em busca</span></div>`:'<p class="muted">Você ainda não tem entregas neste protótipo.</p>'}</div>`}
+ else if(state.tab==='pagamentos'){screen.innerHTML=header('Área do cliente','Pagamentos')+`<div class="card"><p>Escolha como prefere pagar suas entregas.</p>${['Pix','Dinheiro','Cartão'].map(x=>`<div class="item"><b>${x}</b><span>${state.payment===x?'✓ Selecionado':'Disponível no projeto'}</span></div>`).join('')}</div><div class="notice">A cobrança real por Pix ou cartão exige integração com um provedor de pagamentos.</div>`}
+ else {screen.innerHTML=header('Sua conta','Perfil do cliente')+`<div class="card"><label>Nome completo</label><input placeholder="Seu nome"><label>Telefone</label><input placeholder="(93) 99999-9999"><button class="btn" onclick="alert('Perfil demonstrativo. O cadastro real será conectado ao banco de dados na próxima etapa.')">Salvar dados</button></div>`}
+}
+function renderDriver(){
+ if(state.tab==='inicio'||state.tab==='corridas'){screen.innerHTML=header('Área do entregador','Olá, motoboy!','Ative sua disponibilidade para receber solicitações.')+`
+ <div class="switch"><span>${state.available?'🟢 Você está disponível':'⚫ Você está indisponível'}</span><button class="btn" style="width:auto;margin:0" id="toggle">${state.available?'Ficar offline':'Ficar online'}</button></div>
+ ${state.requested?`<div class="card"><span class="pill">NOVA CORRIDA</span><h2>Entrega para aceitar</h2><p><b>Retirada:</b> ${state.pickup}</p><p><b>Destino:</b> ${state.dropoff}</p><div class="price">R$ ${(state.price*.8).toFixed(2).replace('.',',')}</div><p class="muted">Repasse demonstrativo ao motoboy (80%).</p>${state.accepted?`<p class="success">✓ Corrida aceita</p><button class="btn green" id="finish">Confirmar entrega concluída</button>`:`<button class="btn green" id="accept">Aceitar corrida</button>`}</div>`:`<div class="card"><h3>Sem novas corridas</h3><p class="muted">Quando um cliente solicitar uma entrega e você estiver disponível, ela aparecerá aqui.</p></div>`}
+ <div class="notice">Protótipo: o envio automático de corridas entre celulares requer servidor e notificações push.</div>`;
+ document.querySelector('#toggle').onclick=()=>{state.available=!state.available;render()};const a=document.querySelector('#accept');if(a)a.onclick=()=>{state.accepted=true;render()};const f=document.querySelector('#finish');if(f)f.onclick=()=>{state.delivered=true;state.requested=false;state.accepted=false;render();alert('Entrega marcada como concluída no protótipo.')};
+ }else if(state.tab==='ganhos'){screen.innerHTML=header('Resumo','Meus ganhos')+`<div class="statgrid"><div class="stat">Hoje<b>R$ ${state.delivered?(state.price*.8).toFixed(2).replace('.',','):'0,00'}</b></div><div class="stat">Corridas<b>${state.delivered?'1':'0'}</b></div></div><div class="notice">Os ganhos são ilustrativos; o cálculo real depende das corridas concluídas e das taxas definidas.</div>`}
+ else{screen.innerHTML=header('Conta do entregador','Meu perfil')+`<div class="card"><label>Nome</label><input placeholder="Nome do motoboy"><label>Telefone</label><input placeholder="(93) 99999-9999"><label>Placa da moto</label><input placeholder="ABC1D23"><button class="btn">Enviar para análise</button></div>`}
+}
+function renderAdmin(){
+ if(state.tab==='painel'){screen.innerHTML=header('Administração','Painel geral','Visão demonstrativa da operação em Santarém–PA')+`<div class="statgrid"><div class="stat">Corridas hoje<b>${state.requested?'1':'0'}</b></div><div class="stat">Motoboys online<b>${state.available?'1':'0'}</b></div><div class="stat">Em andamento<b>${state.requested&&!state.delivered?'1':'0'}</b></div><div class="stat">Receita da plataforma<b>R$ ${state.requested?'3,00':'0,00'}</b></div></div><div class="card"><h3>Atividade recente</h3><p>${state.requested?'Nova solicitação de entrega registrada.':'Nenhuma solicitação registrada ainda.'}</p></div><div class="notice">Os números são dados de demonstração, não dados reais.</div>`}
+ else if(state.tab==='corridas'){screen.innerHTML=header('Operação','Todas as corridas')+`<div class="card">${state.requested?`<div class="item"><div><b>Solicitação #FE-001</b><div class="muted">${state.pickup} → ${state.dropoff}</div><div class="muted">Pagamento: ${state.payment}</div></div><span class="pill">${state.delivered?'Concluída':state.accepted?'Aceita':'Buscando'}</span></div>`:'<p class="muted">Nenhuma corrida cadastrada.</p>'}</div>`}
+ else if(state.tab==='motoboys'){screen.innerHTML=header('Equipe','Motoboys')+`<div class="card"><div class="item"><div><b>Motoboy de demonstração</b><div class="muted">Cadastro não conectado</div></div><span class="pill">${state.available?'Online':'Offline'}</span></div><button class="btn" onclick="alert('A aprovação real será feita pelo painel conectado ao banco de dados.')">Revisar cadastros</button></div>`}
+ else{screen.innerHTML=header('Configurações','Preços e comissões')+`<div class="card"><label>Taxa mínima (R$)</label><input type="number" value="8.00" min="0"><label>Valor por km (R$)</label><input type="number" value="2.00" min="0"><label>Comissão da plataforma (%)</label><input type="number" value="20" min="0" max="100"><button class="btn" onclick="alert('Valores demonstrativos. Salvar configurações de verdade exige backend.')">Salvar configurações</button></div>`}
+}
+document.querySelectorAll('[data-role]').forEach(b=>b.onclick=()=>{state.role=b.dataset.role;state.tab=navs[state.role][0][0];render()});
+render();
+</script>
+<script>if ("serviceWorker" in navigator) { window.addEventListener("load", () => navigator.serviceWorker.register("./service-worker.js").catch(()=>{})); }</script></body></html>

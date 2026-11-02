@@ -1,0 +1,18 @@
+{
+  "name": "Flash Entregas",
+  "short_name": "Flash Entregas",
+  "description": "Solicite entregas por motoboy em Santarém-PA.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#101010",
+  "theme_color": "#ffd400",
+  "icons": [
+    {
+      "src": "./assets/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
