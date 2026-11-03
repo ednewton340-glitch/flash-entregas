@@ -90,7 +90,27 @@ function renderAdmin(){
  else if(state.tab==='motoboys'){screen.innerHTML=header('Equipe','Motoboys')+`<div class="card"><div class="item"><div><b>Motoboy de demonstração</b><div class="muted">Cadastro não conectado</div></div><span class="pill">${state.available?'Online':'Offline'}</span></div><button class="btn" onclick="alert('A aprovação real será feita pelo painel conectado ao banco de dados.')">Revisar cadastros</button></div>`}
  else{screen.innerHTML=header('Configurações','Preços e comissões')+`<div class="card"><label>Taxa mínima (R$)</label><input type="number" value="8.00" min="0"><label>Valor por km (R$)</label><input type="number" value="2.00" min="0"><label>Comissão da plataforma (%)</label><input type="number" value="20" min="0" max="100"><button class="btn" onclick="alert('Valores demonstrativos. Salvar configurações de verdade exige backend.')">Salvar configurações</button></div>`}
 }
-document.querySelectorAll('[data-role]').forEach(b=>b.onclick=()=>{state.role=b.dataset.role;state.tab=navs[state.role][0][0];render()});
+document.querySelectorAll('[data-role]').forEach(b=>b.onclick=()=>{state.role=b.dataset.role;state.tab=navs[state.role][0][0];render()}); 
 render();
 </script>
-<script>if ("serviceWorker" in navigator) { window.addEventListener("load", () => navigator.serviceWorker.register("./service-worker.js").catch(()=>{})); }</script></body></html>
+<script>if ("serviceWorker" in navigator) { window.addEventListener("load", () => navigator.serviceWorker.register("./service-worker.js").catch(()=>{})); }</script><script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getFirestore } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBZUHCBlLrdQWBCcmQb1Sd-ZEw-lnqU98E",
+  authDomain: "flash-entregas-cc514.firebaseapp.com",
+  projectId: "flash-entregas-cc514",
+  storageBucket: "flash-entregas-cc514.firebasestorage.app",
+  messagingSenderId: "1053963559715",
+  appId: "1:1053963559715:web:a50320f695db6c5ef96296",
+  measurementId: "G-RB90MBS55M"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+window.flashDB = db;
+
+console.log("FLASH ENTREGAS CONECTADA!");
+</script></body></html>
